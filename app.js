@@ -168,6 +168,49 @@ const server = http.createServer((req, res) => {
                     res.end();
                 }))
             break;
+        case '/add':
+            fs.readFile('./data/data.json','utf-8',(err, data1)=> {
+                let dataUser = JSON.parse(data1);
+                if (req.method === 'GET') {
+                    fs.readFile('./views/add.html', 'utf8', ((err, data) => {
+                        if (err) {
+                            throw new Error(err.message)
+                        }
+
+                        res.writeHead(200, 'success', {'Content-type': 'text/html'})
+                        res.write(data)
+
+                        res.end()
+                    }))
+                } else {
+                    let data = ''
+                    req.on('data', chunk => {
+                        data += chunk
+                    })
+
+                    req.on('end', () => {
+                        let dataForm = qs.parse(data);
+                        let userAdd = {
+                            name : dataForm.nameAdd,
+                            email : dataForm.emailAdd,
+                            phone : dataForm.phoneAdd,
+                        }
+                        dataUser.push(userAdd);
+                        fs.writeFile('./data/data.json', JSON.stringify(dataUser),'utf-8',err =>{
+                            if(err){
+                                console.log(err.message);
+                            }
+                        })
+
+                        res.writeHead(301, {
+                            "Location": "http://localhost:8082"
+                        })
+                        res.end();
+                    })
+                }
+            })
+
+            break;
         default:
             res.end();
             break;
